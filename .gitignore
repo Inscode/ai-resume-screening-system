@@ -1,0 +1,27 @@
+# Maven
+target/
+
+# IntelliJ / VS Code
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Environment files
+.env
+
+# Uploads folder
+uploads/
+
+# Node modules (if you later add React)
+node_modules/
+
+# Python cache
+__pycache__/
+*.pyc
