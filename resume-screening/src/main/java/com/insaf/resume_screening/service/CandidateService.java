@@ -26,7 +26,7 @@ public class CandidateService {
 
     public Double getMatchScore(String jobDescription, String resumePath){
         try {
-            String aiUrl = "http://localhost:5000/api/ai/match";
+            String aiUrl = "http://ai-matcher:5000/api/ai/match";
 
             File resumeFile = new File(resumePath);
             FileSystemResource resource = new FileSystemResource((resumeFile));

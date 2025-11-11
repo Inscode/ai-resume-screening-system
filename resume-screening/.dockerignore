@@ -1,0 +1,22 @@
+# Maven build files
+target/
+!target/*.jar
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# OS junk
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Environment/configs
+.env
+
+# Uploads and temp
+uploads/
+tmp/
