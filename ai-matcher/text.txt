@@ -1,0 +1,29 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc g++ && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir \
+    torch==2.0.1+cpu \
+    -f https://download.pytorch.org/whl/torch_stable.html
+
+# Copy requirements
+COPY requirements.txt .
+
+# Use PyPI mirror with timeout and retries
+RUN pip install --no-cache-dir -r requirements.txt
+
+
+# Clean up build dependencies
+RUN apt-get purge -y --auto-remove gcc g++ && \
+    rm -rf /root/.cache/pip
+
+# Copy app
+COPY . .
+
+EXPOSE 5000
+CMD ["python", "app.py"]
