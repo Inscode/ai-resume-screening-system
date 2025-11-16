@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { Mail, Lock, AlertCircle, Shield, ArrowRight } from "lucide-react";
+import { adminLogin } from "../api/adminService";
+import { useNavigate } from "react-router-dom";
 
 function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -13,23 +16,10 @@ function AdminLogin() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("http://localhost:8080/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Invalid credentials");
-      }
-
-      const data = await response.json();
+      const data = await adminLogin({ username: email, password });
       localStorage.setItem("token", data.token);
-
       // Navigate to dashboard
-      window.location.href = "/admin/dashboard";
+      navigate("/admin/dashboard");
     } catch (err) {
       console.error("Login Failed", err);
       setError("Invalid credentials. Please try again.");

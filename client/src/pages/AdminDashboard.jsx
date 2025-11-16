@@ -12,7 +12,7 @@ import {
   X,
 } from "lucide-react";
 
-import { getAllCandidates, createJob } from "../api/adminService";
+import { getAllCandidates, createJob, viewResume } from "../api/adminService";
 import { useNavigate } from "react-router-dom";
 
 export default function AdminDashboard() {
@@ -51,6 +51,14 @@ export default function AdminDashboard() {
     return matchesSearch && matchesFilter;
   });
 
+  const handleViewResume = async (resumeUrl) => {
+    const result = await viewResume(resumeUrl);
+
+    if (!result.success) {
+      alert(result.error);
+    }
+  };
+
   const getScoreColor = (score) => {
     if (score >= 70)
       return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
@@ -83,7 +91,7 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.location.href = "/admin/login";
+    navigate("/admin/login");
   };
 
   return (
@@ -327,15 +335,13 @@ export default function AdminDashboard() {
                             </div>
                           </td>
                           <td className="p-4 text-center">
-                            <a
-                              href={`http://localhost:8080/${c.resumeUrl}`}
-                              target="_blank"
-                              rel="noreferrer"
+                            <button
+                              onClick={() => handleViewResume(c.resumeUrl)}
                               className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 hover:border-blue-500/40 rounded-lg text-blue-400 hover:text-blue-300 transition text-sm font-medium"
                             >
                               <FileText className="w-4 h-4" />
                               <span>View</span>
-                            </a>
+                            </button>
                           </td>
                         </tr>
                       );

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Briefcase,
   DollarSign,
@@ -18,6 +19,12 @@ export default function JobBoard() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
+
+  const applyJob = (job) => {
+    navigate(`/apply/${job.id}`);
+  };
 
   // useEffect(() => {
   //   fetch("http://localhost:8080/api/jobs")
@@ -280,7 +287,9 @@ export default function JobBoard() {
 
                   {/* Apply Button */}
                   <button
-                    onClick={() => (window.location.href = `/apply/${job.id}`)}
+                    onClick={() => {
+                      applyJob(job);
+                    }}
                     className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 group-hover:shadow-lg group-hover:shadow-blue-500/30"
                   >
                     <span>Apply Now</span>

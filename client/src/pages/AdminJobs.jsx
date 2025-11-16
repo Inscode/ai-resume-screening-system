@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Users,
   Briefcase,
@@ -14,6 +14,7 @@ import {
   Clock,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { createJob, deleteJob, getJobs, updateJob } from "../api/adminService";
 
 export default function AdminJobs() {
   const [jobs, setJobs] = useState([]);
@@ -21,6 +22,11 @@ export default function AdminJobs() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingJob, setEditingJob] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [jobToDelete, setJobToDelete] = useState(null);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -30,74 +36,106 @@ export default function AdminJobs() {
     maxSalary: "",
     applicationDeadline: "",
   });
-  const navigate = useNavigate();
+
+  const handleEditJob = (job) => {
+    setEditingJob(job);
+
+    setFormData({
+      title: job.title,
+      description: job.description,
+      skillsRequired: job.skillsRequired,
+      employmentType: job.employmentType,
+      minSalary: job.minSalary.toString(),
+      maxSalary: job.maxSalary.toString(),
+      applicationDeadline: job.applicationDeadline,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateJob = async () => {
+    try {
+      const jobData = {
+        title: formData.title,
+        description: formData.description,
+        skillsRequired: formData.skillsRequired,
+        employmentType: formData.employmentType,
+        minSalary: parseFloat(formData.minSalary),
+        maxSalary: parseFloat(formData.maxSalary),
+        applicationDeadline: formData.applicationDeadline,
+      };
+
+      await updateJob(editingJob.id, jobData);
+
+      setShowEditModal(false);
+      setEditingJob(null);
+      setFormData({
+        title: "",
+        description: "",
+        skillsRequired: "",
+        employmentType: "Full-Time",
+        minSalary: "",
+        maxSalary: "",
+        applicationDeadline: "",
+      });
+      fetchJobs();
+    } catch (err) {
+      console.error("Error updating job", err);
+      alert("Failed to update job");
+    }
+  };
 
   useEffect(() => {
     fetchJobs();
+    setLoading(false);
   }, []);
 
   const fetchJobs = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/jobs");
-      const data = await response.json();
+      const data = await getJobs();
       setJobs(data);
     } catch (err) {
       console.error("Error fetching jobs", err);
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleCreateJob = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:8080/api/jobs", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          ...formData,
-          minSalary: parseFloat(formData.minSalary),
-          maxSalary: parseFloat(formData.maxSalary),
-        }),
-      });
+      const jobData = {
+        ...formData,
+        minSalary: parseFloat(formData.minSalary),
+        maxSalary: parseFloat(formData.maxSalary),
+      };
 
-      if (response.ok) {
-        setShowCreateModal(false);
-        setFormData({
-          title: "",
-          description: "",
-          skillsRequired: "",
-          employmentType: "Full-Time",
-          minSalary: "",
-          maxSalary: "",
-          applicationDeadline: "",
-        });
-        fetchJobs();
-      }
+      await createJob(jobData);
+
+      setShowCreateModal(false);
+      setFormData({
+        title: "",
+        description: "",
+        skillsRequired: "",
+        employmentType: "Full-Time",
+        minSalary: "",
+        maxSalary: "",
+        applicationDeadline: "",
+      });
+      fetchJobs();
     } catch (err) {
       console.error("Error creating job", err);
       alert("Failed to create job");
     }
   };
 
-  const handleDeleteJob = async (jobId) => {
-    if (!window.confirm("Are you sure you want to delete this job?")) return;
+  const handleDeleteJob = (job) => {
+    setJobToDelete(job);
+    setShowDeleteModal(true);
+  };
 
+  const confirmDelete = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:8080/api/jobs/${jobId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        fetchJobs();
-      }
+      await deleteJob(jobToDelete.id);
+      setShowDeleteModal(false);
+      setJobToDelete(null);
+      fetchJobs();
     } catch (err) {
       console.error("Error deleting job", err);
       alert("Failed to delete job");
@@ -129,7 +167,7 @@ export default function AdminJobs() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.location.href = "/admin/login";
+    navigate("/admin/login");
   };
 
   const getEmploymentTypeBadge = (type) => {
@@ -317,11 +355,14 @@ export default function AdminJobs() {
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      <button className="p-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg text-blue-400 transition">
+                      <button
+                        onClick={() => handleEditJob(job)}
+                        className="p-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg text-blue-400 transition"
+                      >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleDeleteJob(job.id)}
+                        onClick={() => handleDeleteJob(job)}
                         className="p-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg text-red-400 transition"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -519,6 +560,235 @@ export default function AdminJobs() {
                   Create Job
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Job Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 rounded-3xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">Edit Job</h2>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingJob(null);
+                  setFormData({
+                    title: "",
+                    description: "",
+                    skillsRequired: "",
+                    employmentType: "Full-Time",
+                    minSalary: "",
+                    maxSalary: "",
+                    applicationDeadline: "",
+                  });
+                }}
+                className="text-slate-400 hover:text-white transition"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">
+                  Job Title *
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
+                  placeholder="e.g. Software Engineer"
+                  className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">
+                  Description *
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  placeholder="Describe the role..."
+                  rows="4"
+                  className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">
+                  Required Skills * (comma separated)
+                </label>
+                <input
+                  type="text"
+                  value={formData.skillsRequired}
+                  onChange={(e) =>
+                    setFormData({ ...formData, skillsRequired: e.target.value })
+                  }
+                  placeholder="e.g. Java, Spring Boot, PostgreSQL"
+                  className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">
+                    Employment Type *
+                  </label>
+                  <select
+                    value={formData.employmentType}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        employmentType: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition"
+                  >
+                    <option value="Full-Time">Full-Time</option>
+                    <option value="Part-Time">Part-Time</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Remote">Remote</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">
+                    Application Deadline *
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.applicationDeadline}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        applicationDeadline: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">
+                    Min Salary (LKR) *
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.minSalary}
+                    onChange={(e) =>
+                      setFormData({ ...formData, minSalary: e.target.value })
+                    }
+                    placeholder="80000"
+                    className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">
+                    Max Salary (LKR) *
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.maxSalary}
+                    onChange={(e) =>
+                      setFormData({ ...formData, maxSalary: e.target.value })
+                    }
+                    placeholder="120000"
+                    className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingJob(null);
+                    setFormData({
+                      title: "",
+                      description: "",
+                      skillsRequired: "",
+                      employmentType: "Full-Time",
+                      minSalary: "",
+                      maxSalary: "",
+                      applicationDeadline: "",
+                    });
+                  }}
+                  className="flex-1 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-xl transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpdateJob}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-xl transition"
+                >
+                  Update Job
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-red-500/20 rounded-3xl p-8 max-w-md w-full">
+            {/* Warning Icon */}
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center">
+                <Trash2 className="w-8 h-8 text-red-400" />
+              </div>
+            </div>
+
+            {/* Title */}
+            <h2 className="text-2xl font-bold text-white text-center mb-3">
+              Delete Job?
+            </h2>
+
+            {/* Message */}
+            <p className="text-slate-400 text-center mb-2">
+              Are you sure you want to delete
+            </p>
+            <p className="text-white font-semibold text-center mb-6">
+              "{jobToDelete?.title}"?
+            </p>
+
+            {/* Warning */}
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6">
+              <p className="text-sm text-red-400 text-center">
+                This action cannot be undone. All applications for this job will
+                also be affected.
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setJobToDelete(null);
+                }}
+                className="flex-1 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-xl transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-semibold rounded-xl transition shadow-lg shadow-red-500/20"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>
