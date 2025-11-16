@@ -22,10 +22,22 @@ public class FileStorageService {
             Files.createDirectories(uploadPath);
         }
 
-        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || originalFilename.isEmpty()) {
+            throw new IOException("Invalid file: filename is empty");
+        }
+
+        // ✅ SANITIZE: Remove spaces and special characters
+        String sanitizedFilename = originalFilename
+                .replaceAll("\\s+", "_")           // Replace all spaces with underscore
+                .replaceAll("[^a-zA-Z0-9._-]", ""); // Keep only letters, numbers, dot, underscore, dash
+
+        String fileName = System.currentTimeMillis() + "_" + sanitizedFilename;
+
         Path filePath = uploadPath.resolve(fileName);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-        return filePath.toString();
+        // Return web path with forward slashes
+        return uploadDir + "/" + fileName;
     }
 }

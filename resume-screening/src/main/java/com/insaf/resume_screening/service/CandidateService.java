@@ -1,6 +1,8 @@
 package com.insaf.resume_screening.service;
 
+import com.insaf.resume_screening.dto.CandidateResponse;
 import com.insaf.resume_screening.entity.Candidate;
+import com.insaf.resume_screening.mapper.CandidateMapper;
 import com.insaf.resume_screening.repository.CandidateRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.FileSystemResource;
@@ -49,7 +51,14 @@ public class CandidateService {
         }
     }
 
-    public List<Candidate> getAll(){return repo.findAll();}
+    public List<CandidateResponse> getAll(){
+        return repo.findAll()
+                .stream()
+                .map(CandidateMapper::toDto)
+                .toList();
+    }
+
+
     public Optional<Candidate> get(Long id){return repo.findById(id);}
     public void delete(Long id){repo.deleteById(id);}
 

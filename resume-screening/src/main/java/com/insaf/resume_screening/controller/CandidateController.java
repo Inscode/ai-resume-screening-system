@@ -1,5 +1,6 @@
 package com.insaf.resume_screening.controller;
 
+import com.insaf.resume_screening.dto.CandidateResponse;
 import com.insaf.resume_screening.entity.Candidate;
 import com.insaf.resume_screening.entity.Job;
 import com.insaf.resume_screening.exception.ResourceNotFoundException;
@@ -63,7 +64,7 @@ public class CandidateController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Candidate>> getAll(){
+    public ResponseEntity<List<CandidateResponse>> getAll(){
         return ResponseEntity.ok(service.getAll());
     }
 
