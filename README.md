@@ -39,7 +39,7 @@ An AI-powered web application that analyzes resumes and matches them against job
 
 ### Frontend
 - React.js  
-- Tailwind CSS or CSS Modules  
+- Tailwind CSS
 - Axios
 
 
