@@ -42,6 +42,12 @@ An AI-powered web application that analyzes resumes and matches them against job
 - Tailwind CSS
 - Axios
 
-
+<img width="1917" height="871" alt="image" src="https://github.com/user-attachments/assets/1d63e8a4-48dc-4d12-9e32-0dcf2e2e0322" />
+<img width="1903" height="866" alt="image" src="https://github.com/user-attachments/assets/51532a91-efcc-4da8-ae21-505cb3406754" />
+<img width="1911" height="886" alt="image" src="https://github.com/user-attachments/assets/6baa5f1e-50c2-49da-8494-d86f900a6fdc" />
+<img width="1903" height="866" alt="image" src="https://github.com/user-attachments/assets/ec3209b5-a7d7-4e60-a352-7a9ae8ad723b" />
+<img width="1880" height="609" alt="image" src="https://github.com/user-attachments/assets/db526e73-135c-4bf3-8a70-fad8bce0fd54" />
+<img width="1114" height="215" alt="image" src="https://github.com/user-attachments/assets/98fcfd02-044b-4866-9b20-0ae7d95a7b9e" />
+<img width="1114" height="215" alt="image" src="https://github.com/user-attachments/assets/861503f3-9e4e-41a3-a7bb-37752901b841" />
 
 
